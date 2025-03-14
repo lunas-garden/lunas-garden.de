@@ -234,17 +234,17 @@ header aside i.bi {
 /* ------------------------------------------------- */
 
 #hero {
+  position: relative;
   height: 100vh;
   margin-top: -80px;
   z-index: 0;
   top: 0;
-  background-image: url("images/Hero.webp");
-  min-height: 500px; 
-  background-attachment: fixed;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
-  
+  min-height: 500px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background-color: var(--light);
 }
 
 #hero img {
@@ -252,6 +252,21 @@ header aside i.bi {
   height: 100%;
   object-fit: cover;
 }
+
+@media (max-width: 768px) {
+  #hero {
+    height: 60vh; /* Reduce height for mobile */
+    min-height: 400px;
+  }
+
+  #hero img {
+    object-fit: contain; /* Prevent excessive cropping */
+    width: 100%;
+    height: auto;
+  }
+}
+
+
 
 
 /* Quote */
@@ -262,27 +277,16 @@ header aside i.bi {
   height: fit-content;
   background-color: var(--light);
   display: flex;
-  padding: 3rem;
-  gap: 3rem;
+  padding: 3em 1em;
   align-items: center;
   justify-content: center;
 
-
-
 }
-/* 
-#quote img {
-  width: 100%;
-  max-width: 400px;
-  min-width: 280px;
-  height: auto;
-} */
 
 
 #quote div {
   width: 100%;
   max-width: 800px;
-
 }
 
 #quote blockquote {
@@ -292,9 +296,6 @@ header aside i.bi {
   letter-spacing: 0.0125em;
 }
 
-#quote blockquote {
-  flex-basis: 45%;
-}
 
 #quote p {
   font-family: var(--humansans);
@@ -311,10 +312,10 @@ header aside i.bi {
   background-color: var(--light);
   display: flex;
   flex-wrap: wrap;
-  padding: 5rem;
-  gap: 10rem;
+  padding: 5em 0;
+  gap: 2em;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
 }
 
 
@@ -324,7 +325,11 @@ header aside i.bi {
   height: 100%;
   flex: 1 0 35%;
   min-width: 320px;
-
+  max-width: 640px;
+  padding: 2em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 #about > div:nth-of-type(1) > img {
@@ -332,15 +337,13 @@ header aside i.bi {
 }
 
 
-
-
-
 #about > div:nth-of-type(2) {
   height: fit-content;
   width: 100%;
   flex: 1 0 35%;
-  min-width: 300px;
+  min-width: 320px;
   max-width: 640px;
+  padding: 2em;
 }
 
 #about > div:nth-of-type(2) > img {
@@ -395,7 +398,7 @@ header aside i.bi {
 
 #courses .right {
   flex: 1 0 60%;
-  padding: 3rem;
+  padding: 3em 2em;
   min-width: 300px;
 }
 
@@ -531,16 +534,24 @@ details[open] summary {
   background-color: var(--caramel);
 }
 
+.event-card button a:link, 
+.event-card button a:hover, 
+.event-card button a:visited, 
+.event-card button a:active {
+  color: var(--cashew);
+} 
+
+
 /* Events */
 /* ------------------------------------------------- */
 
 #testimonials {
   min-height: 100vh;
   background-color: var(--dark);
-  padding: 5rem;
+  padding: 5em 0;
   display: flex;
   flex-wrap: wrap;
-  gap: 3rem;
+  gap: 2em;
   align-items: center;
 }
 
@@ -570,6 +581,7 @@ details[open] summary {
   flex: 1 1 40%;
   text-align: center;
   min-width: 300px;
+  padding: 0 2em;
 
 }
 
