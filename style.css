@@ -504,6 +504,14 @@ details[open] summary {
 
 }
 
+.event-card .event-time {
+  font-family: var(--humansans);
+  font-size: calc(1 * var(--fs-base));
+  margin: 0;
+  padding: 0;
+
+}
+
 .event-card .location {
   font-family: var(--humansans);
   font-size: var(--fs-base);
