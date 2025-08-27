@@ -24,6 +24,38 @@
   font-style: normal;
 }
 
+@font-face {
+  font-family: 'stolenlove-bold';
+  src: url('fonts/stolenlove-bold.eot');
+  src: url('fonts/stolenlove-bold.eot?#iefix') format('embedded-opentype'),
+       url('fonts/stolenlove-bold.woff2') format('woff2'),
+       url('fonts/stolenlove-bold.woff') format('woff'),
+       url('fonts/stolenlove-bold.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'stolenlove';
+  src: url('fonts/stolenlove.eot');
+  src: url('fonts/stolenlove.eot?#iefix') format('embedded-opentype'),
+       url('fonts/stolenlove.woff2') format('woff2'),
+       url('fonts/stolenlove.woff') format('woff'),
+       url('fonts/stolenlove.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+
+@font-face {
+  font-family: 'stolenlove-black';
+  /* src: url('fonts/stolenlove.eot'); */
+  src: url('fonts/stolenlove-black-webfont.woff2') format('woff2'),
+       url('fonts/stolenlove-black-webfont.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
 
 /* CSS Resets */
 /* ------------------------------------------------- */
@@ -95,7 +127,8 @@ button {
   --fs-3xl: clamp(3.05rem, 3.54vi + 2.17rem, 5rem);
 
   /* Font-Family */
-  --rowan: 'rowan6_styled';
+  /* --rowan: 'rowan6_styled'; */
+  --rowan: 'stolenlove-black';
   --humansans: 'human_sanslight';
 
 }
@@ -347,7 +380,7 @@ header aside i.bi {
 }
 
 #about > div:nth-of-type(2) > img {
-  max-width: 240px;
+  max-width: 280px;
   height: auto;
   margin: -30px ;
 }
@@ -769,3 +802,4 @@ footer i.bi {
   font-size: var(--fs-base);
   color: var(--black);
 }
+
