@@ -77,6 +77,11 @@ function applyLang(l) {
   document.querySelectorAll('#toggle-lang, #toggle-lang-mobile').forEach(btn => {
     btn.textContent = l === 'de' ? 'EN' : 'DE';
   });
+
+  // Uebersetzter FAQ-Text ist unterschiedlich lang -> offene Panels nachmessen
+  document.querySelectorAll('.faq-item.open .faq-a').forEach(panel => {
+    panel.style.maxHeight = panel.scrollHeight + 'px';
+  });
 }
 
 function initLang() {
@@ -228,8 +233,11 @@ document.addEventListener('DOMContentLoaded', function() {
 // ─── SCROLL REVEAL ───────────────────────────────────────
 function initReveal() {
   if (!('IntersectionObserver' in window)) return;
+  // Bewusst NICHT dabei: .faq-item und .ll-price. Beide enthalten Bedienelemente
+  // (Akkordeon-Button, Kauf-CTA). Loest der IntersectionObserver dort aus
+  // irgendeinem Grund nicht aus, bliebe ein Conversion-Element unsichtbar.
   const els = document.querySelectorAll(
-    '.angebot, .event-row, .tcard, .fw-item, .tanja-img-col, .tanja-txt, .kontakt-left, .kontakt-right, .nl-inner, .jb-content, .statement-inner'
+    '.angebot, .event-row, .fab-card, .fw-item, .ll-text, .tanja-img-col, .tanja-txt, .kontakt-left, .kontakt-right, .nl-inner, .jb-content, .statement-inner'
   );
   els.forEach((el, i) => {
     el.classList.add('reveal');
@@ -242,13 +250,24 @@ function initReveal() {
     });
   }, { threshold: 0.1, rootMargin: '0px 0px -48px 0px' });
   els.forEach(el => obs.observe(el));
+
+  // Sicherheitsnetz: Was nach 4 s immer noch nicht aufgedeckt wurde, wird
+  // sichtbar geschaltet. Lieber ohne Animation als unsichtbarer Inhalt.
+  setTimeout(() => {
+    els.forEach(el => {
+      const r = el.getBoundingClientRect();
+      if (r.top < innerHeight && r.bottom > 0) el.classList.add('visible');
+    });
+  }, 4000);
 }
 
 // ─── SMOOTH SCROLL ───────────────────────────────────────
 function initSmoothScroll() {
   document.querySelectorAll('a[href^="#"]').forEach(a => {
     a.addEventListener('click', e => {
-      const target = document.querySelector(a.getAttribute('href'));
+      const href = a.getAttribute('href');
+      if (!href || href === '#') return;
+      const target = document.querySelector(href);
       if (!target) return;
       e.preventDefault();
       window.scrollTo({
@@ -260,7 +279,14 @@ function initSmoothScroll() {
 }
 
 // ─── CALENDLY ────────────────────────────────────────────
-function openCalendly() {
+function trackCta(source, label) {
+  if (typeof window.gtag !== 'function') return;
+  gtag('event', 'cta_click', { cta_source: source || 'unbekannt', cta_label: label || '' });
+}
+window.trackCta = trackCta;
+
+function openCalendly(source) {
+  trackCta(source, 'calendly');
   if (typeof Calendly !== 'undefined') {
     Calendly.initPopupWidget({ url: CALENDLY_URL });
     return false;
@@ -268,6 +294,122 @@ function openCalendly() {
   window.open(CALENDLY_URL, '_blank', 'noopener');
 }
 window.openCalendly = openCalendly;
+
+// ─── FAQ-AKKORDEON ───────────────────────────────────────
+function initFaq() {
+  document.querySelectorAll('.faq-item').forEach(item => {
+    const btn = item.querySelector('.faq-q');
+    const panel = item.querySelector('.faq-a');
+    if (!btn || !panel) return;
+    btn.addEventListener('click', () => {
+      const open = item.classList.toggle('open');
+      btn.setAttribute('aria-expanded', String(open));
+      panel.style.maxHeight = open ? panel.scrollHeight + 'px' : '0px';
+      if (open) trackCta('faq', btn.textContent.trim().replace(/\+$/, '').trim());
+    });
+  });
+  // Bei Sprachwechsel/Resize kann sich die Hoehe aendern
+  addEventListener('resize', () => {
+    document.querySelectorAll('.faq-item.open .faq-a').forEach(p => {
+      p.style.maxHeight = p.scrollHeight + 'px';
+    });
+  }, { passive: true });
+}
+
+// ─── STICKY CTA (Mobile) ─────────────────────────────────
+function initStickyCta() {
+  const bar = document.getElementById('sticky-cta');
+  const hero = document.getElementById('hero');
+  const kontakt = document.getElementById('kontakt');
+  if (!bar || !hero) return;
+  const update = () => {
+    const pastHero = scrollY > hero.offsetHeight * 0.85;
+    // Im Kontaktbereich waere die Leiste redundant und verdeckt das Formular
+    const inContact = kontakt && kontakt.getBoundingClientRect().top < innerHeight * 0.9;
+    bar.classList.toggle('visible', pastHero && !inContact);
+  };
+  addEventListener('scroll', update, { passive: true });
+  update();
+}
+
+// ─── KONTAKTFORMULAR: senden ohne Seitenwechsel ──────────
+const FORM_TEXT = {
+  de: {
+    sending: 'Wird gesendet …',
+    ok: 'Danke – deine Nachricht ist bei Tanja angekommen. Sie meldet sich in der Regel innerhalb von zwei Werktagen.',
+    err: 'Das hat leider nicht geklappt. Schreib mir gern direkt auf Instagram – oder versuch es in einem Moment noch einmal.'
+  },
+  en: {
+    sending: 'Sending …',
+    ok: 'Thank you – your message reached Tanja. She usually replies within two working days.',
+    err: 'That did not work, unfortunately. Feel free to message me on Instagram – or try again in a moment.'
+  }
+};
+
+function initContactForm() {
+  const form = document.getElementById('contact-form');
+  const status = document.getElementById('form-status');
+  if (!form || !status) return;
+
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const t = FORM_TEXT[lang] || FORM_TEXT.de;
+    const submitBtn = form.querySelector('button[type="submit"]');
+
+    status.hidden = false;
+    status.className = 'form-status';
+    status.textContent = t.sending;
+    if (submitBtn) submitBtn.disabled = true;
+
+    try {
+      const data = Object.fromEntries(new FormData(form).entries());
+      const res = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(data)
+      });
+      const json = await res.json().catch(() => ({}));
+      if (res.ok && json.success) {
+        status.className = 'form-status ok';
+        status.textContent = t.ok;
+        trackCta('kontaktformular', data.interest || 'ohne Angabe');
+        form.reset();
+      } else {
+        throw new Error(json.message || 'submit failed');
+      }
+    } catch (err) {
+      status.className = 'form-status err';
+      status.textContent = t.err;
+    } finally {
+      if (submitBtn) submitBtn.disabled = false;
+      status.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  });
+}
+
+// ─── Interesse aus dem Angebots-Link vorbelegen ──────────
+function initInterestPreselect() {
+  const select = document.getElementById('f-interest');
+  if (!select) return;
+  document.querySelectorAll('[data-interest]').forEach(el => {
+    el.addEventListener('click', () => {
+      const val = el.getAttribute('data-interest');
+      if ([...select.options].some(o => o.value === val)) select.value = val;
+      trackCta('angebot-link', val);
+    });
+  });
+}
+
+// ─── Ausgehende Buchungslinks messen ─────────────────────
+function initOutboundTracking() {
+  document.querySelectorAll('a[target="_blank"][href^="http"]').forEach(a => {
+    a.addEventListener('click', () => {
+      let host = a.href;
+      try { host = new URL(a.href).hostname; } catch (e) {}
+      trackCta('outbound', host);
+    });
+  });
+}
 
 // ─── INIT ─────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
@@ -278,4 +420,9 @@ document.addEventListener('DOMContentLoaded', () => {
   initMobileMenu();
   initReveal();
   initSmoothScroll();
+  initFaq();
+  initStickyCta();
+  initContactForm();
+  initInterestPreselect();
+  initOutboundTracking();
 });
