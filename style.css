@@ -272,6 +272,22 @@ address { font-style: normal; }
 }
 .btn-cream:hover { background: var(--sand); }
 
+/* ─── TAP-FEEDBACK (Click/Touch) ─────────────────────────────
+   Hover allein reicht auf dem Handy nicht - hier gibt's keinen Mauszeiger,
+   der "klickbar" signalisiert. Ein kurzer Scale-Pulse beim Antippen macht
+   den Druck spuerbar, bevor die Seite reagiert (z.B. Calendly-Popup laedt). */
+.btn-pill:active,
+.btn-hero:active,
+.btn-hero-ghost:active,
+.btn-cream-lg:active,
+.btn-dark:active,
+.btn-outline:active,
+.btn-outline-light:active,
+.btn-cream:active {
+  transform: scale(0.96);
+  transition: transform 0.1s ease;
+}
+
 /* FIX: zweite .btn-cream-lg-Definition hatte font-size: 0.0rem und hat den
    Button-Text unsichtbar gemacht. Regel entfernt – die Definition oben gilt. */
 
@@ -955,6 +971,12 @@ address { font-style: normal; }
 .jb-content .ornament { color: var(--sand); font-size: 1.4rem; }
 .jb-content h2 { font-family: var(--display); font-size: clamp(2.2rem, 5vw, 4.5rem); font-weight: 300; font-style: italic; color: var(--cream); line-height: 1.15; margin-bottom: 1.5rem; }
 .jb-content p { font-family: var(--sans); font-size: clamp(0.945rem, 1.575vw, 1.1025rem); color: rgba(245,238,228,0.65); margin-bottom: 2.5rem; max-width: 56ch; margin-inline: auto; }
+
+/* Testimonial-Beweis direkt vor der finalen CTA - staerkster Vertrauens-
+   Trigger genau am Entscheidungspunkt statt irgendwo im Scroll-Verlauf. */
+.jb-proof { max-width: 42ch; margin: 0 auto 1.75rem; }
+.jb-proof p { font-family: var(--display); font-style: italic; font-size: clamp(1rem, 1.6vw, 1.15rem); color: var(--sand); line-height: 1.5; margin-bottom: 0.5rem; }
+.jb-proof cite { font-family: var(--sans); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(245,238,228,0.5); }
 .jb-btns { display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap; align-items: center; }
 
 /* ═══════════════════

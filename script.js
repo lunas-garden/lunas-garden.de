@@ -317,16 +317,63 @@ function initFaq() {
 }
 
 // ─── STICKY CTA (Mobile) ─────────────────────────────────
+// Die Leiste zeigt nicht ueberall den gleichen Text - je nachdem, welcher
+// Abschnitt grade im Blick ist, passt eine andere Formulierung besser zu
+// dem, was die Besucherin dort gerade denkt (Angebote vergleichen vs.
+// Einwand in der FAQ vs. schon ueberzeugt bei den Stimmen/ueber Tanja).
+const STICKY_VARIANTS = {
+  default: {
+    de: { strong: 'Kennenlerngespräch', span: '30 Min · kostenlos · online', btn: 'Buchen' },
+    en: { strong: 'Discovery call', span: '30 min · free · online', btn: 'Book' }
+  },
+  warm: {
+    de: { strong: 'Bereit für den ersten Schritt?', span: '30 Min · kostenlos · online', btn: 'Jetzt buchen' },
+    en: { strong: 'Ready for the first step?', span: '30 min · free · online', btn: 'Book now' }
+  },
+  faq: {
+    de: { strong: 'Noch unsicher?', span: '30 Min · kostenlos · wir klären es', btn: 'Gespräch buchen' },
+    en: { strong: 'Still unsure?', span: "30 min · free · let's clarify", btn: 'Book a call' }
+  }
+};
+
 function initStickyCta() {
   const bar = document.getElementById('sticky-cta');
   const hero = document.getElementById('hero');
   const kontakt = document.getElementById('kontakt');
+  const faq = document.getElementById('faq');
+  const warmStart = document.getElementById('testimonials');
   if (!bar || !hero) return;
+
+  const strongEl = bar.querySelector('.sticky-text strong');
+  const spanEl   = bar.querySelector('.sticky-text span');
+  const btnEl    = bar.querySelector('.btn-pill');
+  let zone = 'default';
+
+  const applyZone = key => {
+    if (zone === key) return;
+    zone = key;
+    const v = STICKY_VARIANTS[key];
+    [[strongEl, v, 'strong'], [spanEl, v, 'span'], [btnEl, v, 'btn']].forEach(([el, variant, field]) => {
+      if (!el) return;
+      el.dataset.langDe = variant.de[field];
+      el.dataset.langEn = variant.en[field];
+      el.textContent = variant[lang][field];
+    });
+  };
+
   const update = () => {
     const pastHero = scrollY > hero.offsetHeight * 0.85;
     // Im Kontaktbereich waere die Leiste redundant und verdeckt das Formular
     const inContact = kontakt && kontakt.getBoundingClientRect().top < innerHeight * 0.9;
     bar.classList.toggle('visible', pastHero && !inContact);
+
+    if (faq && faq.getBoundingClientRect().top < innerHeight * 0.6) {
+      applyZone('faq');
+    } else if (warmStart && warmStart.getBoundingClientRect().top < innerHeight * 0.6) {
+      applyZone('warm');
+    } else {
+      applyZone('default');
+    }
   };
   addEventListener('scroll', update, { passive: true });
   update();
